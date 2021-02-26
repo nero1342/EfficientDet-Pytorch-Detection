@@ -25,12 +25,12 @@ def get_instance(config, **kwargs):
 
 def get_dataloader(cfg, dataset):
     collate_fn = None
-    if cfg.get('collate_fn', False):
-        collate_fn = get_function(cfg['collate_fn'])
-
+    if cfg['args'].get('collate_fn', False):
+        collate_fn = get_function(cfg['args']['collate_fn'])
+    cfg['args']['collate_fn'] = collate_fn
     dataloader = get_instance(cfg,
                               dataset=dataset,
-                              collate_fn=collate_fn)
+                              )
     return dataloader
 
 

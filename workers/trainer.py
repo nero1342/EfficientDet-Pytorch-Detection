@@ -90,8 +90,8 @@ class Trainer():
                 imgs = data['img']
                 ann = data['annot']
                 
-                imgs = imgs.cuda() 
-                ann = ann.cuda() 
+                # imgs = imgs.cuda() 
+                # ann = ann.cuda() 
 
                 self.optimizer.zero_grad() 
                 _, regression, classification, anchors = self.model(imgs)
@@ -109,26 +109,27 @@ class Trainer():
                 with torch.no_grad():
                     
                     self.tsboard.update_scalar(
-                        'Loss', {'train': loss}, epoch * len(dataloader) + i 
+                        'Loss - train', loss, epoch * len(dataloader) + i 
                     )
                     self.tsboard.update_scalar(
-                        'Regression Loss', {'train': reg_loss}, epoch * len(dataloader) + i 
+                        'Regression Loss - train', reg_loss, epoch * len(dataloader) + i 
                     )
                     self.tsboard.update_scalar(
-                        'Classification Loss', {'train': cls_loss}, epoch * len(dataloader) + i 
+                        'Classification Loss - train', cls_loss, epoch * len(dataloader) + i 
                     )
 
-                print("+ Train result")
-                avg_loss = total_loss.value()[0]
-                print("Loss:", avg_loss)
-                # for m in self.metric.values():
-                #     m.summary() 
-
+                
             except Exception as e:
                     print('[Error]', traceback.format_exc())
                     print(e)
                     break
                 
+        print("+ Train result")
+        avg_loss = total_loss.value()[0]
+        print("Loss:", avg_loss)
+        # for m in self.metric.values():
+        #     m.summary() 
+
     @torch.no_grad() 
     def val_epoch(self, epoch, dataloader):
         cls_loss_lst = meter.AverageValueMeter() 
@@ -170,13 +171,13 @@ class Trainer():
         self.val_loss.append(avg_loss)
         
         self.tsboard.update_scalar(
-            'Loss', {'val': avg_loss}, epoch
+            'Loss - val', avg_loss, epoch
         )
         self.tsboard.update_scalar(
-            'Regression Loss', {'val': avg_reg_loss}, epoch 
+            'Regression Loss - val', avg_reg_loss, epoch 
         )
         self.tsboard.update_scalar(
-            'Classification Loss', {'val': avg_cls_loss}, epoch 
+            'Classification Loss - val', avg_cls_loss, epoch 
         )
                         
         # Calculate metric here

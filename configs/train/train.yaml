@@ -48,8 +48,9 @@ dataset:
             name: DataLoader
             args:
                 shuffle: True
-                batch_size: 1
+                batch_size: 4
                 num_workers: 1
+                collate_fn: collater
                 
     val:
         name: CocoDataset
@@ -62,8 +63,9 @@ dataset:
             name: DataLoader
             args:
                 shuffle: False
-                batch_size: 1
+                batch_size: 4
                 num_workers: 1
+                collate_fn: collater
 trainer:
     nepochs: 100
     val_step: 1
