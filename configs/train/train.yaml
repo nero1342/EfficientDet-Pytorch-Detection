@@ -1,0 +1,71 @@
+id: baseline
+gpus: 0 # None when don't use gpus 
+pretrained: None
+seed: 42
+obj_list: [ 'adidas0', 'chanel','gucci','hh','lacoste','mk','nike','prada','puma','supreme' ]
+model:
+    name: EfficientDetBackbone
+    args:
+        num_classes: 10
+        compound_coef: 0
+        
+optimizer:
+    name: SGD
+    args:
+        lr: 0.001
+        momentum: 0.9
+        nesterov: True 
+        # <argument keyword>: <argument value>
+        # ... more args
+loss:
+    name: FocalLoss
+    args:
+        #<argument keyword>: <argument value>
+        # ... more args
+metric:
+    - name: Accuracy
+      args:
+          #<argument keyword>: <argument value>
+          # ... more args
+    # ... more metrics
+scheduler:
+    name: ReduceLROnPlateau
+    args:
+        mode: min
+        factor: 0.5
+        patience: 3
+        verbose: True
+
+dataset:
+    train:
+        name: CocoDataset
+        args:
+            root_dir: data/logo
+            set: train
+            transform: None
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: True
+                batch_size: 1
+                num_workers: 1
+                
+    val:
+        name: CocoDataset
+        args:
+            root_dir: data/logo
+            set: val 
+            transform: None 
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: False
+                batch_size: 1
+                num_workers: 1
+trainer:
+    nepochs: 100
+    val_step: 1
+    log_step: 1
+    save_dir: runs
