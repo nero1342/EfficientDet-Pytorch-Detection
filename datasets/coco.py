@@ -9,9 +9,10 @@ import cv2
 
 
 class CocoDataset(Dataset):
-    def __init__(self, root_dir, set='train2017', transform=None):
+    def __init__(self, path_to_json, img_dir, set='train2017', transform=None):
 
-        self.root_dir = root_dir
+        self.path_to_json = path_to_json
+        self.img_dir = img_dir 
         self.set_name = set
         self.transform = transform
         
@@ -25,9 +26,9 @@ class CocoDataset(Dataset):
                 self.transform = tvtf.Compose([ Normalizer(),
                                                 Resizer(),
                                                 ])
-        self.coco = COCO(os.path.join(self.root_dir, 'annotations', 'instances_' + self.set_name + '.json'))
+        self.coco = COCO(self.path_to_json)
         self.image_ids = self.coco.getImgIds()
-
+        #print(self.coco.imgs)
         self.load_classes()
 
     def load_classes(self):
@@ -60,8 +61,8 @@ class CocoDataset(Dataset):
         return sample
 
     def load_image(self, image_index):
-        image_info = self.coco.loadImgs(self.image_ids[image_index])[0]
-        path = os.path.join(self.root_dir, self.set_name, image_info['file_name'])
+        image_info = self.coco.loadImgs([self.image_ids[image_index]])[0]
+        path = os.path.join(self.img_dir, image_info['file_name'])
         img = cv2.imread(path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         
@@ -69,7 +70,7 @@ class CocoDataset(Dataset):
 
     def load_annotations(self, image_index):
         # get ground truth annotations
-        annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index], iscrowd=False)
+        annotations_ids = self.coco.getAnnIds(imgIds=[self.image_ids[image_index]], iscrowd=False)
         annotations = np.zeros((0, 5))
 
         # some images appear to miss annotations

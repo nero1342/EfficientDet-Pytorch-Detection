@@ -1,0 +1,41 @@
+id: baseline
+pretrained: /Volumes/Entertainments/NERO/EfficientDet-Pytorch-Detection/weights/best_loss.pth
+seed: 42
+obj_list: [ 'adidas0', 'chanel','gucci','hh','lacoste','mk','nike','prada','puma','supreme' ]
+threshold: 0.5 
+
+model:
+    name: EfficientDetBackbone
+    args:
+        num_classes: 10
+        compound_coef: 0
+        
+dataset:
+    train:
+        name: CocoDataset
+        args:
+            root_dir: data/logo
+            set: val 
+            transform: None 
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: False
+                batch_size: 8
+                num_workers: 4
+                collate_fn: collater
+    val:
+        name: CocoDataset
+        args:
+            root_dir: data/logo
+            set: val 
+            transform: None 
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: False
+                batch_size: 8
+                num_workers: 4
+                collate_fn: collater

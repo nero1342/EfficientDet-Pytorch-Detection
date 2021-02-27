@@ -45,7 +45,7 @@ class Trainer():
         self.save_dir = os.path.join(config['trainer']['save_dir'], self.train_ID)
         self.tsboard = TensorboardLogger(path=self.save_dir) 
 
-    def save_checkpoint(self, epoch, val_loss, val_metric):
+    def save_checkpoint(self, epoch, val_loss = 0, val_metric = None):
         data = {
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
@@ -73,8 +73,8 @@ class Trainer():
         #        print(
         #            f'{k} is not improved from {self.best_metric[k]:.6f}.')
 
-        # print('Saving current model...')
-        # torch.save(data, os.path.join(self.save_dir, 'current.pth'))    
+        print('Saving current model...')
+        torch.save(data, os.path.join(self.save_dir, 'current.pth'))    
 
     def train_epoch(self, epoch, dataloader):
         total_loss = meter.AverageValueMeter() 
@@ -86,58 +86,49 @@ class Trainer():
         for i, data in enumerate(progress_bar):
             # progress_bar.update() 
             
-            try:
-                imgs = data['img']
-                ann = data['annot']
-                
-                imgs = move_to(imgs, self.device)
-                ann = move_to(ann, self.device)
+            imgs = data['img']
+            ann = data['annot']
+            
+            imgs = move_to(imgs, self.device)
+            ann = move_to(ann, self.device)
 
-                # imgs = imgs.cuda() 
-                # ann = ann.cuda() 
+            # imgs = imgs.cuda() 
+            # ann = ann.cuda() 
 
-                self.optimizer.zero_grad() 
-                _, regression, classification, anchors = self.model(imgs)
-                cls_loss, reg_loss = self.criterion(classification, regression, anchors, ann)
+            self.optimizer.zero_grad() 
+            _, regression, classification, anchors = self.model(imgs)
+            cls_loss, reg_loss = self.criterion(classification, regression, anchors, ann)
 
-                cls_loss = cls_loss.mean() 
-                reg_loss = reg_loss.mean() 
-                loss = cls_loss + reg_loss
-                #print("Loss", reg_loss, cls_loss, loss)
+            cls_loss = cls_loss.mean() 
+            reg_loss = reg_loss.mean() 
+            loss = cls_loss + reg_loss
+            #print("Loss", reg_loss, cls_loss, loss)
 
-                if loss == 0 or not torch.isfinite(loss):
-                        continue
-
-
-                if loss == 0 or not torch.isfinite(loss):
+            if loss == 0 or not torch.isfinite(loss):
                     continue
-                total_loss.add(loss.item()) 
-                loss.backward() 
 
-                self.optimizer.step() 
+            total_loss.add(loss.item()) 
+            loss.backward() 
 
-                with torch.no_grad():
-                    total_loss.add(loss.item())
-                    progress_bar.set_description(
-                        'Iteration: {}/{}. Cls loss: {:.5f}. Reg loss: {:.5f}. Total loss: {:.5f}'.format(
-                            i + 1, len(dataloader), cls_loss.item(),
-                            reg_loss.item(), loss.item()))
-                    
-                    self.tsboard.update_scalar(
-                        'Loss - train', loss, epoch * len(dataloader) + i 
-                    )
-                    self.tsboard.update_scalar(
-                        'Regression Loss - train', reg_loss, epoch * len(dataloader) + i 
-                    )
-                    self.tsboard.update_scalar(
-                        'Classification Loss - train', cls_loss, epoch * len(dataloader) + i 
-                    )
+            self.optimizer.step() 
 
+            with torch.no_grad():
+                total_loss.add(loss.item())
+                progress_bar.set_description(
+                    'Iteration: {}/{}. Cls loss: {:.5f}. Reg loss: {:.5f}. Total loss: {:.5f}'.format(
+                        i + 1, len(dataloader), cls_loss.item(),
+                        reg_loss.item(), total_loss.value()[0]))
                 
-            except Exception as e:
-                    print('[Error]', traceback.format_exc())
-                    print(e)
-                    
+                self.tsboard.update_scalar(
+                    'Loss - train', loss, epoch * len(dataloader) + i 
+                )
+                self.tsboard.update_scalar(
+                    'Regression Loss - train', reg_loss, epoch * len(dataloader) + i 
+                )
+                self.tsboard.update_scalar(
+                    'Classification Loss - train', cls_loss, epoch * len(dataloader) + i 
+                )
+
                 
         print("+ Train result")
         avg_loss = total_loss.value()[0]
@@ -174,18 +165,21 @@ class Trainer():
                 loss = cls_loss + reg_loss
                 if loss == 0 or not torch.isfinite(loss):
                     continue 
-                progress_bar.set_description(
-                  'Iteration: {}/{}. Cls loss: {:.5f}. Reg loss: {:.5f}. Total loss: {:.5f}'.format(
-                      i + 1, len(dataloader), cls_loss.item(),
-                      reg_loss.item(), loss.item()))
                 cls_loss_lst.add(cls_loss.item())
                 reg_loss_lst.add(reg_loss.item()) 
+                progress_bar.set_description(
+                  'Iteration: {}/{}. Cls loss: {:.5f}. Reg loss: {:.5f}. Total loss: {:.5f}'.format(
+                      i + 1, len(dataloader), cls_loss_lst.value()[0],
+                      reg_loss_lst.value()[0], cls_loss_lst.value()[0] + reg_loss_lst.value()[0]))
+                
             except:
                 pass 
         print("+ Evaluation result")
         avg_cls_loss = cls_loss_lst.value()[0]
         avg_reg_loss = reg_loss_lst.value()[0]
         avg_loss = avg_cls_loss + avg_reg_loss
+        print("Loss: ", avg_loss)
+        
         self.val_loss.append(avg_loss)
         
         self.tsboard.update_scalar(
@@ -230,6 +224,8 @@ class Trainer():
                 val_loss = self.val_loss[-1]
                 val_metric = None 
                 # {k: m[-1] for k, m in self.val_metric.items()}
-                self.save_checkpoint(epoch, val_loss, val_metric)
+                # self.save_checkpoint(epoch, val_loss, val_metric)
 
+            self.save_checkpoint(epoch)
+            
                
