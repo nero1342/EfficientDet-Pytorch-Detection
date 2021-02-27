@@ -94,6 +94,7 @@ def train(config):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config')
+    parser.add_argument('--gpus', default=None)
     parser.add_argument('--debug', action='store_true')
 
     args = parser.parse_args()
@@ -101,6 +102,7 @@ if __name__ == "__main__":
     config_path = args.config
     config = yaml.load(open(config_path, 'r'), Loader=yaml.Loader)
     config['debug'] = args.debug
-
+    config['gpus'] = args.gpus
+    
     set_determinism()
     train(config)
