@@ -221,17 +221,12 @@ class Trainer():
                 self.scheduler.step(self.val_loss[-1])
 
                 # 4: Saving checkpoints
-<<<<<<< HEAD
+
                 # if not self.debug:
                 # Get latest val loss here
                 val_loss = self.val_loss[-1]
                 val_metric = None 
                 # {k: m[-1] for k, m in self.val_metric.items()}
                 self.save_checkpoint(epoch, val_loss, val_metric)
-=======
-                if True:
-                    # Get latest val loss here
-                    val_loss = self.val_loss[-1]
-                    val_metric = None # {k: m[-1] for k, m in self.val_metric.items()}
-                    self.save_checkpoint(epoch, val_loss, val_metric)
->>>>>>> 5043829a7dd0c31775dfd768078a93f11c0e8d5c
+
+               
