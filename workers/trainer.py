@@ -9,7 +9,7 @@ from datetime import datetime
 import traceback 
 
 from loggers import TensorboardLogger
-
+from utils.device import move_to, detach 
 class Trainer():
     def __init__(self, 
                 device, 
@@ -90,8 +90,11 @@ class Trainer():
                 imgs = data['img']
                 ann = data['annot']
                 
-                imgs = imgs.cuda() 
-                ann = ann.cuda() 
+                imgs = move_to(imgs, self.device)
+                ann = move_to(ann, self.device)
+                
+                # imgs = imgs.cuda() 
+                # ann = ann.cuda() 
 
                 self.optimizer.zero_grad() 
                 _, regression, classification, anchors = self.model(imgs)

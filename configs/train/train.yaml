@@ -1,5 +1,5 @@
 id: baseline
-# None when don't use gpus 
+gpus: 0 # None when don't use gpus 
 pretrained: None
 seed: 42
 obj_list: [ 'adidas0', 'chanel','gucci','hh','lacoste','mk','nike','prada','puma','supreme' ]
