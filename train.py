@@ -32,8 +32,8 @@ def train(config):
     pretrained = None
     if (str(pretrained_path) != 'None'):
         pretrained = torch.load(pretrained_path, map_location=dev_id)
-        for item in ["model"]:
-            config[item] = pretrained["config"][item]
+        # for item in ["model"]:
+        #     config[item] = pretrained["config"][item]
 
     # 1: Load datasets
     train_dataloader, val_dataloader = \
@@ -45,7 +45,12 @@ def train(config):
 
     # Train from pretrained if it is not None
     if pretrained is not None:
-        model.load_state_dict(pretrained['model_state_dict'])
+        try:
+            ret = model.load_state_dict(torch.load(pretrained_path), strict=False)
+        except RuntimeError as e:
+            print(f'[Warning] Ignoring {e}')
+            print(
+                '[Warning] Don\'t panic if you see this, this might be because you load a pretrained weights with different number of classes. The rest of the weights should be loaded already.')
 
     # 3: Define loss
     set_seed(config['seed'])
@@ -56,8 +61,10 @@ def train(config):
     optimizer = get_instance(config['optimizer'],
                              params=model.parameters())
     if pretrained is not None:
+      try:
         optimizer.load_state_dict(pretrained['optimizer_state_dict'])
-
+      except:
+        pass
     # 5: Define Scheduler
     set_seed(config['seed'])
     scheduler = get_instance(config['scheduler'],
