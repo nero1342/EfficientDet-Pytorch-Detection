@@ -92,7 +92,7 @@ class Trainer():
                 
                 imgs = move_to(imgs, self.device)
                 ann = move_to(ann, self.device)
-                
+
                 # imgs = imgs.cuda() 
                 # ann = ann.cuda() 
 
@@ -161,9 +161,9 @@ class Trainer():
                 imgs = data['img']
                 ann = data['annot']
 
-                imgs = imgs.cuda() 
-                ann = ann.cuda() 
-
+                imgs = move_to(imgs, self.device)
+                ann = move_to(ann, self.device)
+                
                 self.optimizer.zero_grad() 
                 _, regression, classification, anchors = self.model(imgs)
                 cls_loss, reg_loss = self.criterion(classification, regression, anchors, ann)
