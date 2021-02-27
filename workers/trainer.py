@@ -63,15 +63,15 @@ class Trainer():
             print(f'Loss is not improved from {self.best_loss:.6f}.')
 
         # for k in self.metric.keys():
-        #     if val_metric[k] > self.best_metric[k]:
-        #         print(
-        #             f'{k} is improved from {self.best_metric[k]: .6f} to {val_metric[k]: .6f}. Saving weights...')
-        #         torch.save(data, os.path.join(
-        #             self.save_dir, f'best_metric_{k}.pth'))
-        #         self.best_metric[k] = val_metric[k]
-        #     else:
-        #         print(
-        #             f'{k} is not improved from {self.best_metric[k]:.6f}.')
+        #    if val_metric[k] > self.best_metric[k]:
+        #        print(
+        #            f'{k} is improved from {self.best_metric[k]: .6f} to {val_metric[k]: .6f}. Saving weights...')
+        #        torch.save(data, os.path.join(
+        #            self.save_dir, f'best_metric_{k}.pth'))
+        #        self.best_metric[k] = val_metric[k]
+        #    else:
+        #        print(
+        #            f'{k} is not improved from {self.best_metric[k]:.6f}.')
 
         # print('Saving current model...')
         # torch.save(data, os.path.join(self.save_dir, 'current.pth'))    
@@ -106,6 +106,9 @@ class Trainer():
                         continue
 
 
+                if loss == 0 or not torch.isfinite(loss):
+                    continue
+                total_loss.add(loss.item()) 
                 loss.backward() 
 
                 self.optimizer.step() 
@@ -218,9 +221,17 @@ class Trainer():
                 self.scheduler.step(self.val_loss[-1])
 
                 # 4: Saving checkpoints
+<<<<<<< HEAD
                 # if not self.debug:
                 # Get latest val loss here
                 val_loss = self.val_loss[-1]
                 val_metric = None 
                 # {k: m[-1] for k, m in self.val_metric.items()}
                 self.save_checkpoint(epoch, val_loss, val_metric)
+=======
+                if True:
+                    # Get latest val loss here
+                    val_loss = self.val_loss[-1]
+                    val_metric = None # {k: m[-1] for k, m in self.val_metric.items()}
+                    self.save_checkpoint(epoch, val_loss, val_metric)
+>>>>>>> 5043829a7dd0c31775dfd768078a93f11c0e8d5c

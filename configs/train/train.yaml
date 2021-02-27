@@ -48,8 +48,8 @@ dataset:
             name: DataLoader
             args:
                 shuffle: True
-                batch_size: 4
-                num_workers: 1
+                batch_size: 8
+                num_workers: 4
                 collate_fn: collater
                 
     val:
@@ -63,8 +63,8 @@ dataset:
             name: DataLoader
             args:
                 shuffle: False
-                batch_size: 4
-                num_workers: 1
+                batch_size: 8
+                num_workers: 4
                 collate_fn: collater
 trainer:
     nepochs: 100
