@@ -1,1 +1,1 @@
-from .backbone import EfficientDetBackbone
+from .efficientdet.model import EfficientDet

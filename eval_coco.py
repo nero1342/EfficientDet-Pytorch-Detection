@@ -20,8 +20,7 @@ from tqdm import tqdm
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from models.backbone import EfficientDetBackbone
-from models.efficientdet.utils import BBoxTransform, ClipBoxes
+from models.efficientdet import BBoxTransform, ClipBoxes
 from utils.utils import preprocess, invert_affine, postprocess, boolean_string
 from utils.random_seed import set_seed, set_determinism
 from utils.getter import get_instance, get_data
@@ -46,7 +45,7 @@ def evaluate_coco(img_path, set_name, image_ids, coco, model, threshold=0.05):
         ori_imgs, framed_imgs, framed_metas = preprocess(image_path)
         x = torch.from_numpy(framed_imgs[0])
 
-        x = move_to(x, args.gpus)
+        x = move_to(x, device)
         # x = x.cuda(gpu)
         x = x.float()
         

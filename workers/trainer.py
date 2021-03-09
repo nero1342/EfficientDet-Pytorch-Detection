@@ -224,8 +224,8 @@ class Trainer():
                 val_loss = self.val_loss[-1]
                 val_metric = None 
                 # {k: m[-1] for k, m in self.val_metric.items()}
-                # self.save_checkpoint(epoch, val_loss, val_metric)
+                self.save_checkpoint(epoch, val_loss, val_metric)
 
-            self.save_checkpoint(epoch)
+            # self.save_checkpoint(epoch)
             
                

@@ -1,19 +1,19 @@
 id: baseline
 pretrained: None
 seed: 42
-obj_list: [ 'adidas0', 'chanel','gucci','hh','lacoste','mk','nike','prada','puma','supreme' ]
+obj_list: ['pieces', 'bishop', 'black-bishop', 'black-king', 'black-knight', 'black-pawn', 'black-queen', 'black-rook', 'white-bishop', 'white-king', 'white-knight', 'white-pawn', 'white-queen', 'white-rook']
 model:
-    name: EfficientDetBackbone
+    name: EfficientDet
     args:
-        num_classes: 10
+        num_classes: 14
         compound_coef: 0
         
 optimizer:
-    name: SGD
+    name: Adam
     args:
         lr: 0.001
-        momentum: 0.9
-        nesterov: True 
+        # momentum: 0.9
+        # nesterov: True 
         # <argument keyword>: <argument value>
         # ... more args
 loss:
@@ -39,31 +39,33 @@ dataset:
     train:
         name: CocoDataset
         args:
-            root_dir: data/logo
+            path_to_json: /content/Chess/annotations/instances_train.json
+            img_dir: /content/Chess/Images/train
             set: train
-            transform: None
+            transform: True
             # ... more args
         loader:
             name: DataLoader
             args:
                 shuffle: True
-                batch_size: 8
-                num_workers: 4
+                batch_size: 16
+                num_workers: 8
                 collate_fn: collater
                 
     val:
         name: CocoDataset
         args:
-            root_dir: data/logo
+            path_to_json: /content/Chess/annotations/instances_valid.json
+            img_dir: /content/Chess/Images/valid
             set: val 
-            transform: None 
+            transform: True 
             # ... more args
         loader:
             name: DataLoader
             args:
                 shuffle: False
-                batch_size: 8
-                num_workers: 4
+                batch_size: 16
+                num_workers: 8
                 collate_fn: collater
 trainer:
     nepochs: 100
