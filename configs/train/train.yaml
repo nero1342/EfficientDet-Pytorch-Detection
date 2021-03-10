@@ -1,7 +1,8 @@
 id: baseline
-pretrained: None
+pretrained: /home/davis20/Detection/EfficientDet-Pytorch-Detection/runs/baseline-2021_03_09-22_50_35/current.pth
 seed: 42
-obj_list: ['pieces', 'bishop', 'black-bishop', 'black-king', 'black-knight', 'black-pawn', 'black-queen', 'black-rook', 'white-bishop', 'white-king', 'white-knight', 'white-pawn', 'white-queen', 'white-rook']
+obj_list: ['Aortic_enlargement', 'Atelectasis', 'Calcification', 'Cardiomegaly', 'Consolidation', 'ILD', 'Infiltration', 'Lung_Opacity', 'Nodule/Mass', 'Other_lesion', 'Pleural_effusion', 'Pleural_thickening', 'Pneumothorax', 'Pulmonary_fibrosis']
+
 model:
     name: EfficientDet
     args:
@@ -39,8 +40,8 @@ dataset:
     train:
         name: CocoDataset
         args:
-            path_to_json: /content/Chess/annotations/instances_train.json
-            img_dir: /content/Chess/Images/train
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/train_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
             set: train
             transform: True
             # ... more args
@@ -49,14 +50,14 @@ dataset:
             args:
                 shuffle: True
                 batch_size: 16
-                num_workers: 8
+                num_workers: 4
                 collate_fn: collater
                 
     val:
         name: CocoDataset
         args:
-            path_to_json: /content/Chess/annotations/instances_valid.json
-            img_dir: /content/Chess/Images/valid
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/val_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
             set: val 
             transform: True 
             # ... more args
@@ -65,7 +66,7 @@ dataset:
             args:
                 shuffle: False
                 batch_size: 16
-                num_workers: 8
+                num_workers: 4
                 collate_fn: collater
 trainer:
     nepochs: 100

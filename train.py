@@ -59,7 +59,8 @@ def train(config):
     # 3: Define loss
     set_seed(config['seed'])
     criterion = get_instance(config['loss']).to(device)
-
+    criterion.device = device
+    
     # 4: Define Optimizer
     set_seed(config['seed'])
     optimizer = get_instance(config['optimizer'],

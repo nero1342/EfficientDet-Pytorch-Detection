@@ -5,7 +5,7 @@ import numpy as np
 
 from models.efficientdet.utils import BBoxTransform, ClipBoxes
 from utils.utils import postprocess, invert_affine, display
-
+from utils.device import move_to
 
 def calc_iou(a, b):
     # a(anchor) [boxes, (y1, x1, y2, x2)]
@@ -27,7 +27,7 @@ def calc_iou(a, b):
 class FocalLoss(nn.Module):
     def __init__(self):
         super(FocalLoss, self).__init__()
-
+        
     def forward(self, classifications, regressions, anchors, annotations, **kwargs):
         alpha = 0.25
         gamma = 2.0
@@ -57,7 +57,7 @@ class FocalLoss(nn.Module):
                 if torch.cuda.is_available():
                     
                     alpha_factor = torch.ones_like(classification) * alpha
-                    alpha_factor = alpha_factor.cuda()
+                    alpha_factor = move_to(alpha_factor, self.device)
                     alpha_factor = 1. - alpha_factor
                     focal_weight = classification
                     focal_weight = alpha_factor * torch.pow(focal_weight, gamma)
@@ -66,7 +66,7 @@ class FocalLoss(nn.Module):
                     
                     cls_loss = focal_weight * bce
                     
-                    regression_losses.append(torch.tensor(0).to(dtype).cuda())
+                    regression_losses.append(move_to(torch.tensor(0).to(dtype), self.device))
                     classification_losses.append(cls_loss.sum())
                 else:
                     
@@ -91,7 +91,7 @@ class FocalLoss(nn.Module):
             # compute the loss for classification
             targets = torch.ones_like(classification) * -1
             if torch.cuda.is_available():
-                targets = targets.cuda()
+                targets = move_to(targets, self.device)
 
             targets[torch.lt(IoU_max, 0.4), :] = 0
 
@@ -106,7 +106,7 @@ class FocalLoss(nn.Module):
 
             alpha_factor = torch.ones_like(targets) * alpha
             if torch.cuda.is_available():
-                alpha_factor = alpha_factor.cuda()
+                alpha_factor = move_to(alpha_factor, self.device)
 
             alpha_factor = torch.where(torch.eq(targets, 1.), alpha_factor, 1. - alpha_factor)
             focal_weight = torch.where(torch.eq(targets, 1.), 1. - classification, classification)
@@ -118,7 +118,7 @@ class FocalLoss(nn.Module):
 
             zeros = torch.zeros_like(cls_loss)
             if torch.cuda.is_available():
-                zeros = zeros.cuda()
+                zeros = move_to(zeros, self.device)
             cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, zeros)
 
             classification_losses.append(cls_loss.sum() / torch.clamp(num_positive_anchors.to(dtype), min=1.0))
@@ -158,24 +158,9 @@ class FocalLoss(nn.Module):
                 regression_losses.append(regression_loss.mean())
             else:
                 if torch.cuda.is_available():
-                    regression_losses.append(torch.tensor(0).to(dtype).cuda())
+                    regression_losses.append(move_to(torch.tensor(0).to(dtype), self.device))
                 else:
                     regression_losses.append(torch.tensor(0).to(dtype))
-
-        # debug
-        imgs = kwargs.get('imgs', None)
-        if imgs is not None:
-            regressBoxes = BBoxTransform()
-            clipBoxes = ClipBoxes()
-            obj_list = kwargs.get('obj_list', None)
-            out = postprocess(imgs.detach(),
-                              torch.stack([anchors[0]] * imgs.shape[0], 0).detach(), regressions.detach(), classifications.detach(),
-                              regressBoxes, clipBoxes,
-                              0.5, 0.3)
-            imgs = imgs.permute(0, 2, 3, 1).cpu().numpy()
-            imgs = ((imgs * [0.229, 0.224, 0.225] + [0.485, 0.456, 0.406]) * 255).astype(np.uint8)
-            imgs = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) for img in imgs]
-            display(out, imgs, obj_list, imshow=False, imwrite=True)
 
         return torch.stack(classification_losses).mean(dim=0, keepdim=True), \
                torch.stack(regression_losses).mean(dim=0, keepdim=True) * 50  # https://github.com/google/automl/blob/6fdd1de778408625c1faf368a327fe36ecd41bf7/efficientdet/hparams_config.py#L233

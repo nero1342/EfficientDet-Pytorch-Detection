@@ -171,9 +171,9 @@ class Classifier(nn.Module):
 
 
 class EfficientNet(nn.Module):
-    def __init__(self, ):
+    def __init__(self, compound_coef):
         super(EfficientNet, self).__init__()
-        model = EffNet.from_pretrained('efficientnet-b0')
+        model = EffNet.from_pretrained(f'efficientnet-b{compound_coef}')
         del model._conv_head
         del model._bn1
         del model._avg_pooling
@@ -191,7 +191,6 @@ class EfficientNet(nn.Module):
             x = block(x, drop_connect_rate=drop_connect_rate)
             if block._depthwise_conv.stride == [2, 2]:
                 feature_maps.append(x)
-
         return feature_maps[1:]
 
 
@@ -201,11 +200,22 @@ class EfficientDet(nn.Module):
         self.compound_coef = compound_coef
 
         self.num_channels = [64, 88, 112, 160, 224, 288, 384, 384][self.compound_coef]
-
-        self.conv3 = nn.Conv2d(40, self.num_channels, kernel_size=1, stride=1, padding=0)
-        self.conv4 = nn.Conv2d(80, self.num_channels, kernel_size=1, stride=1, padding=0)
-        self.conv5 = nn.Conv2d(192, self.num_channels, kernel_size=1, stride=1, padding=0)
-        self.conv6 = nn.Conv2d(192, self.num_channels, kernel_size=3, stride=2, padding=1)
+        conv_channel_coef = {
+            # the channels of P3/P4/P5.
+            0: [40, 112, 320],
+            1: [40, 112, 320],
+            2: [48, 120, 352],
+            3: [48, 96, 232],
+            4: [56, 160, 448],
+            5: [64, 176, 512],
+            6: [72, 200, 576],
+            7: [72, 200, 576],
+            8: [80, 224, 640],
+        }
+        self.conv3 = nn.Conv2d(conv_channel_coef[self.compound_coef][0], self.num_channels, kernel_size=1, stride=1, padding=0)
+        self.conv4 = nn.Conv2d(conv_channel_coef[self.compound_coef][1], self.num_channels, kernel_size=1, stride=1, padding=0)
+        self.conv5 = nn.Conv2d(conv_channel_coef[self.compound_coef][2], self.num_channels, kernel_size=1, stride=1, padding=0)
+        self.conv6 = nn.Conv2d(conv_channel_coef[self.compound_coef][2], self.num_channels, kernel_size=3, stride=2, padding=1)
         self.conv7 = nn.Sequential(nn.ReLU(),
                                    nn.Conv2d(self.num_channels, self.num_channels, kernel_size=3, stride=2, padding=1))
 
@@ -235,7 +245,7 @@ class EfficientDet(nn.Module):
         self.regressor.header.weight.data.fill_(0)
         self.regressor.header.bias.data.fill_(0)
 
-        self.backbone_net = EfficientNet()
+        self.backbone_net = EfficientNet(compound_coef = self.compound_coef)
 
     def freeze_bn(self):
         for m in self.modules():
@@ -243,9 +253,9 @@ class EfficientDet(nn.Module):
                 m.eval()
 
     def forward(self, inputs):
+        _ = 0
         
         img_batch = inputs
-
         c3, c4, c5 = self.backbone_net(img_batch)
         p3 = self.conv3(c3)
         p4 = self.conv4(c4)
@@ -255,11 +265,10 @@ class EfficientDet(nn.Module):
 
         features = [p3, p4, p5, p6, p7]
         features = self.bifpn(features)
-
+       
         regression = torch.cat([self.regressor(feature) for feature in features], dim=1)
         classification = torch.cat([self.classifier(feature) for feature in features], dim=1)
         anchors = self.anchors(img_batch)
-        _ = 0
 
         return _, regression, classification, anchors
 

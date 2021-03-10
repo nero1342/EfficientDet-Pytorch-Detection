@@ -1,0 +1,75 @@
+id: b3
+pretrained:
+seed: 42
+obj_list: ['Aortic_enlargement', 'Atelectasis', 'Calcification', 'Cardiomegaly', 'Consolidation', 'ILD', 'Infiltration', 'Lung_Opacity', 'Nodule/Mass', 'Other_lesion', 'Pleural_effusion', 'Pleural_thickening', 'Pneumothorax', 'Pulmonary_fibrosis']
+
+model:
+    name: EfficientDet
+    args:
+        num_classes: 14
+        compound_coef: 3
+        
+optimizer:
+    name: Adam
+    args:
+        lr: 0.001
+        # momentum: 0.9
+        # nesterov: True 
+        # <argument keyword>: <argument value>
+        # ... more args
+loss:
+    name: FocalLoss
+    args:
+        #<argument keyword>: <argument value>
+        # ... more args
+metric:
+    - name: Accuracy
+      args:
+          #<argument keyword>: <argument value>
+          # ... more args
+    # ... more metrics
+scheduler:
+    name: ReduceLROnPlateau
+    args:
+        mode: min
+        factor: 0.5
+        patience: 3
+        verbose: True
+
+dataset:
+    train:
+        name: CocoDataset
+        args:
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/train_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
+            set: train
+            transform: True
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: True
+                batch_size: 8
+                num_workers: 8
+                collate_fn: collater
+                
+    val:
+        name: CocoDataset
+        args:
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/val_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
+            set: val 
+            transform: True 
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: False
+                batch_size: 8
+                num_workers: 8
+                collate_fn: collater
+trainer:
+    nepochs: 100
+    val_step: 1
+    log_step: 1
+    save_dir: runs

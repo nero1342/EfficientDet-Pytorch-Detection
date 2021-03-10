@@ -1,0 +1,45 @@
+id: baseline
+pretrained: runs/b3-2021_03_09-23_31_32/best_loss.pth
+seed: 42
+threshold: 0.5 
+obj_list: ['Aortic_enlargement', 'Atelectasis', 'Calcification', 'Cardiomegaly', 'Consolidation', 'ILD', 'Infiltration', 'Lung_Opacity', 'Nodule/Mass', 'Other_lesion', 'Pleural_effusion', 'Pleural_thickening', 'Pneumothorax', 'Pulmonary_fibrosis']
+
+model:
+    name: EfficientDet
+    args:
+        num_classes: 14
+        compound_coef: 3
+
+
+dataset:
+    train:
+        name: CocoDataset
+        args:
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/train_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
+            set: train
+            transform: True
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: True
+                batch_size: 16
+                num_workers: 4
+                collate_fn: collater
+                
+    val:
+        name: CocoDataset
+        args:
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/test_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/test_images/
+            set: test
+            transform: True 
+            # ... more args
+        loader:
+            name: DataLoader
+            args:
+                shuffle: False
+                batch_size: 16
+                num_workers: 4
+                collate_fn: collater

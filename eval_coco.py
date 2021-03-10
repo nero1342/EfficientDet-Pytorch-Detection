@@ -20,7 +20,7 @@ from tqdm import tqdm
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from models.efficientdet import BBoxTransform, ClipBoxes
+from models.efficientdet.utils import BBoxTransform, ClipBoxes
 from utils.utils import preprocess, invert_affine, postprocess, boolean_string
 from utils.random_seed import set_seed, set_determinism
 from utils.getter import get_instance, get_data
@@ -80,7 +80,7 @@ def evaluate_coco(img_path, set_name, image_ids, coco, model, threshold=0.05):
 
                 image_result = {
                     'image_id': image_id,
-                    'category_id': label + 1,
+                    'category_id': label,
                     'score': float(score),
                     'bbox': box.tolist(),
                 }
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     SET_NAME = config['dataset']['val']['args']['set']
     VAL_IMGS = config['dataset']['val']['args']['img_dir']
     VAL_GT = config['dataset']['val']['args']['path_to_json']
-    MAX_IMAGES = 100
+    MAX_IMAGES = 10000
     coco_gt = COCO(VAL_GT)
     image_ids = coco_gt.getImgIds()[:MAX_IMAGES]
 

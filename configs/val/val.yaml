@@ -1,20 +1,22 @@
 id: baseline
-pretrained: /content/EfficientDet-Pytorch-Detection/runs/baseline-2021_03_09-14_25_30/best_loss.pth
+pretrained: runs/b3-2021_03_09-23_31_32/best_loss.pth
 seed: 42
 threshold: 0.5 
-obj_list: ['pieces', 'bishop', 'black-bishop', 'black-king', 'black-knight', 'black-pawn', 'black-queen', 'black-rook', 'white-bishop', 'white-king', 'white-knight', 'white-pawn', 'white-queen', 'white-rook']
+obj_list: ['Aortic_enlargement', 'Atelectasis', 'Calcification', 'Cardiomegaly', 'Consolidation', 'ILD', 'Infiltration', 'Lung_Opacity', 'Nodule/Mass', 'Other_lesion', 'Pleural_effusion', 'Pleural_thickening', 'Pneumothorax', 'Pulmonary_fibrosis']
+
 model:
     name: EfficientDet
     args:
         num_classes: 14
-        compound_coef: 0
+        compound_coef: 3
+
 
 dataset:
     train:
         name: CocoDataset
         args:
-            path_to_json: /content/Chess/annotations/instances_train.json
-            img_dir: /content/Chess/Images/train
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/train_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
             set: train
             transform: True
             # ... more args
@@ -23,14 +25,14 @@ dataset:
             args:
                 shuffle: True
                 batch_size: 16
-                num_workers: 8
+                num_workers: 4
                 collate_fn: collater
                 
     val:
         name: CocoDataset
         args:
-            path_to_json: /content/Chess/annotations/instances_valid.json
-            img_dir: /content/Chess/Images/valid
+            path_to_json: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled/val_annotations.json
+            img_dir: data/vinbigdata-coco-dataset-with-wbf-3x-downscaled
             set: val 
             transform: True 
             # ... more args
@@ -39,5 +41,5 @@ dataset:
             args:
                 shuffle: False
                 batch_size: 16
-                num_workers: 8
+                num_workers: 4
                 collate_fn: collater
